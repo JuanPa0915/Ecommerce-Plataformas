@@ -1,17 +1,122 @@
 ---
+import "../styles/global.css";
+import { fetchProducts, fetchCategories } from "../lib/supabase";
+import { getProductImageUrl } from "../lib/supabase";
 
+const url = new URL(Astro.request.url);
+const search = url.searchParams.get("search") ?? "";
+const category = url.searchParams.get("category") ?? "all";
+const pageParam = Number.parseInt(url.searchParams.get("page") ?? "1", 10);
+const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+const pageSize = 12;
+
+const [{ data: productsData, count, error }, categories] = await Promise.all([
+  fetchProducts({ search, category, page, pageSize }),
+  fetchCategories(),
+]);
+
+const products = productsData ?? [];
+const totalPages = Math.max(1, Math.ceil((count ?? 0) / pageSize));
+
+function pageUrl(p) {
+  const next = new URL(url);
+  next.searchParams.set("page", String(p));
+  return `${next.pathname}${next.search}`;
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catalogo</title>
+  </head>
+  <body>
+    <main class="max-w-6xl mx-auto px-4 py-10">
+      <h1 class="text-3xl font-bold mb-2">Catalogo</h1>
+      <p class="text-surface-400 text-sm mb-6">
+        {(count ?? 0)} producto{(count ?? 0) === 1 ? "" : "s"}
+      </p>
+      <div class="mb-6">
+        <a href="/admin" class="btn-secondary">Ir al panel admin</a>
+      </div>
+
+      <form method="GET" action="/" class="flex flex-col sm:flex-row gap-3 mb-8">
+        <input
+          type="search"
+          name="search"
+          value={search}
+          placeholder="Buscar productos..."
+          class="input-field flex-1"
+        />
+
+        <select name="category" class="input-field sm:w-56">
+          <option value="all" selected={category === "all"}>Todas las categorias</option>
+          {categories.map((cat) => (
+            <option value={cat} selected={category === cat}>{cat}</option>
+          ))}
+        </select>
+
+        <button type="submit" class="btn-primary">Buscar</button>
+
+        {(search || category !== "all") && (
+          <a href="/" class="btn-secondary">Limpiar</a>
+        )}
+      </form>
+
+      {error && (
+        <section class="card p-6 mb-6">
+          <p class="text-red-400 font-semibold">Error al cargar productos</p>
+          <p class="text-surface-400 text-sm mt-1">{error}</p>
+        </section>
+      )}
+
+      {!error && products.length === 0 && (
+        <section class="card p-6 mb-6">
+          <p class="text-surface-200 font-semibold">No se encontraron productos</p>
+        </section>
+      )}
+
+      {!error && products.length > 0 && (
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {products.map((product) => (
+            <article class="card p-4">
+              <div class="aspect-video rounded-xl overflow-hidden bg-surface-800/60 mb-4">
+                <img
+                  src={getProductImageUrl(product.image_url)}
+                  alt={product.name}
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <h2 class="font-semibold text-surface-100">{product.name}</h2>
+              <p class="text-surface-400 text-sm mt-2">{product.description}</p>
+              <p class="text-surface-200 mt-3">${product.price.toLocaleString("es-CO")}</p>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {!error && totalPages > 1 && (
+        <nav class="flex items-center gap-2 mt-8">
+          {page > 1 && (
+            <a href={pageUrl(page - 1)} class="btn-secondary">Anterior</a>
+          )}
+
+          {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((n) => (
+            <a
+              href={pageUrl(n)}
+              class={n === page ? "btn-primary" : "btn-secondary"}
+            >
+              {n}
+            </a>
+          ))}
+
+          {page < totalPages && (
+            <a href={pageUrl(page + 1)} class="btn-secondary">Siguiente</a>
+          )}
+        </nav>
+      )}
+    </main>
+  </body>
 </html>

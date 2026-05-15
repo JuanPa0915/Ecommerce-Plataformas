@@ -1,0 +1,146 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Login</title>
+  </head>
+  <body>
+    <main class="min-h-screen flex items-center justify-center px-4 py-10">
+      <section class="card w-full max-w-md p-6 sm:p-8">
+        <div class="mb-6">
+          <h1 class="font-display text-2xl font-bold text-surface-50">Panel Admin</h1>
+          <p class="text-surface-400 text-sm mt-1">Inicia sesión para gestionar productos.</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="email" class="input-label">Correo</label>
+            <input id="email" name="email" type="email" autocomplete="email" class="input-field" placeholder="tu@email.com" required />
+          </div>
+
+          <div>
+            <label for="password" class="input-label">Contraseña</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" class="input-field" placeholder="********" required />
+          </div>
+
+          <p id="login-error" class="hidden text-sm text-red-300 bg-red-950/40 border border-red-900/40 rounded-lg px-3 py-2"></p>
+
+          <button id="login-btn" type="submit" class="btn-primary w-full justify-center">
+            Entrar
+          </button>
+
+          <!-- Espacio entre los botones -->
+          <div class="h-4"></div>
+
+          <button id="recover-password-btn" class="btn-secondary w-full justify-center" onclick="recoverPassword()">Recuperar Contraseña</button>
+
+        </form>
+
+        <div class="mt-5 text-center">
+          <a href="/" class="text-surface-400 text-sm hover:text-surface-200 transition-colors">Volver al catalogo</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      import { getBrowserClient } from "../lib/supabase";
+
+      const supabase = getBrowserClient();
+      const form = document.getElementById("login-form");
+      const loginBtn = document.getElementById("login-btn");
+      const errorEl = document.getElementById("login-error");
+
+      async function boot() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          window.location.replace("/dashboard");
+        }
+      }
+
+      boot();
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = (document.getElementById("email") as HTMLInputElement).value.trim();
+        const password = (document.getElementById("password") as HTMLInputElement).value;
+
+        errorEl?.classList.add("hidden");
+        if (errorEl) errorEl.textContent = "";
+
+        if (!email || !password) {
+          if (errorEl) {
+            errorEl.textContent = "Completa correo y contraseña.";
+            errorEl.classList.remove("hidden");
+          }
+          return;
+        }
+
+        if (loginBtn) {
+          loginBtn.setAttribute("disabled", "true");
+          loginBtn.textContent = "Entrando...";
+        }
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (loginBtn) {
+          loginBtn.removeAttribute("disabled");
+          loginBtn.textContent = "Entrar";
+        }
+
+        if (error) {
+          if (errorEl) {
+            errorEl.textContent = error.message;
+            errorEl.classList.remove("hidden");
+          }
+          return;
+        }
+
+        window.location.replace("/dashboard");
+      });
+
+      async function recoverPassword() {
+        const email = document.getElementById('email').value;
+        if (!email) {
+          alert('Por favor, ingresa tu correo electrónico para recuperar tu contraseña.');
+          return;
+        }
+
+        try {
+          const supabase = getBrowserClient();
+          const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+          if (error) {
+            alert('Hubo un error al intentar recuperar la contraseña: ' + error.message);
+          } else {
+            alert('Se ha enviado un correo para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.');
+          }
+        } catch (err) {
+          console.error('Error al intentar recuperar la contraseña:', err);
+          alert('Ocurrió un error inesperado. Por favor, intenta nuevamente más tarde.');
+        }
+      }
+
+      async function createAdminUser() {
+        const supabase = getBrowserClient();
+
+        const { data, error } = await supabase.auth.signUp({
+          email: "juan.aristizabalde@gmail.com",
+          password: "12345678",
+        });
+
+        if (error) {
+          console.error("Error al crear el usuario administrador:", error.message);
+        } else {
+          console.log("Usuario administrador creado exitosamente:", data);
+        }
+      }
+
+      createAdminUser();
+    </script>
+  </body>
+</html>
