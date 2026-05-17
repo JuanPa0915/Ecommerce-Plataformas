@@ -3,6 +3,8 @@ import "../styles/global.css";
 import { fetchProducts, fetchCategories } from "../lib/supabase";
 import { getProductImageUrl } from "../lib/supabase";
 
+export const prerender = false;
+
 const url = new URL(Astro.request.url);
 const search = url.searchParams.get("search") ?? "";
 const category = url.searchParams.get("category") ?? "all";
@@ -29,7 +31,8 @@ function pageUrl(p) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Catalogo</title>
+    <title>Catálogo de Productos | Luxe E-commerce</title>
+    <meta name="description" content="Explora nuestro catálogo de productos exclusivos con los mejores precios." />
   </head>
   <body>
     <main class="max-w-6xl mx-auto px-4 py-10">
@@ -80,19 +83,21 @@ function pageUrl(p) {
       {!error && products.length > 0 && (
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (
-            <article class="card p-4">
-              <div class="aspect-video rounded-xl overflow-hidden bg-surface-800/60 mb-4">
-                <img
-                  src={getProductImageUrl(product.image_url)}
-                  alt={product.name}
-                  class="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <h2 class="font-semibold text-surface-100">{product.name}</h2>
-              <p class="text-surface-400 text-sm mt-2">{product.description}</p>
-              <p class="text-surface-200 mt-3">${product.price.toLocaleString("es-CO")}</p>
-            </article>
+            <a href={`/product/${product.id}`} class="card p-4 hover:border-brand-500/50 transition-colors group">
+              <article>
+                <div class="aspect-video rounded-xl overflow-hidden bg-surface-800/60 mb-4">
+                  <img
+                    src={getProductImageUrl(product.image_url)}
+                    alt={product.name}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                </div>
+                <h2 class="font-semibold text-surface-100">{product.name}</h2>
+                <p class="text-surface-400 text-sm mt-2 line-clamp-2">{product.description}</p>
+                <p class="text-surface-200 mt-3 font-bold">${product.price.toLocaleString("es-CO")}</p>
+              </article>
+            </a>
           ))}
         </section>
       )}
