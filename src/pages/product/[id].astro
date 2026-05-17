@@ -23,25 +23,39 @@ if (!product) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{product.name} | Luxe E-commerce</title>
     <meta name="description" content={product.description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body>
-    <main class="max-w-5xl mx-auto px-4 py-12">
-      <div class="mb-8">
-        <a href="/" class="btn-secondary">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+    <!-- Top navigation bar -->
+    <header class="sticky top-0 z-30 border-b border-surface-200/60 backdrop-blur-xl bg-surface-50/80">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center shadow-md shadow-accent-500/20">
+            <svg class="w-4.5 h-4.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <span class="font-display font-bold text-surface-800 text-lg">Luxe<span class="text-accent-500">.</span></span>
+        </a>
+        <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           Volver al catálogo
         </a>
       </div>
+    </header>
 
+    <main class="max-w-5xl mx-auto px-4 py-12">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
         <!-- Imagen -->
-        <div class="card p-2 overflow-hidden aspect-square flex items-center justify-center bg-surface-900/40">
+        <div class="card p-3 overflow-hidden aspect-square flex items-center justify-center bg-surface-100/50">
           <img
             src={getProductImageUrl(product.image_url)}
             alt={product.name}
-            class="max-w-full max-h-full object-contain rounded-lg"
+            class="max-w-full max-h-full object-contain rounded-xl"
           />
         </div>
 
@@ -53,31 +67,34 @@ if (!product) {
                 {product.category}
               </span>
             )}
-            <h1 class="text-4xl font-bold text-surface-50 mt-2">{product.name}</h1>
-            <p class="text-3xl font-bold text-brand-400 mt-4">
+            <h1 class="text-4xl font-extrabold text-surface-900 mt-3 tracking-tight">{product.name}</h1>
+            <p class="text-3xl font-bold text-accent-500 mt-4">
               ${product.price.toLocaleString("es-CO")}
             </p>
           </div>
 
-          <div class="space-y-6">
-            <div class="card p-5 bg-surface-800/20 border-surface-800/40">
-              <h2 class="text-sm font-semibold uppercase text-surface-400 tracking-wider mb-2">Descripción</h2>
-              <p class="text-surface-200 leading-relaxed">
+          <div class="space-y-5">
+            <div class="card p-5 bg-surface-100/40">
+              <h2 class="text-sm font-semibold uppercase text-surface-500 tracking-wider mb-2">Descripción</h2>
+              <p class="text-surface-700 leading-relaxed">
                 {product.description || "Sin descripción disponible para este producto."}
               </p>
             </div>
 
             <div class="flex items-center gap-4">
               <div class="flex-1">
-                <p class="text-xs text-surface-500 uppercase font-medium mb-1">Disponibilidad</p>
+                <p class="text-xs text-surface-500 uppercase font-semibold mb-1">Disponibilidad</p>
                 <div class="flex items-center gap-2">
-                  <div class={`w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-                  <span class="text-sm text-surface-200">
+                  <div class={`w-2.5 h-2.5 rounded-full ${product.stock > 0 ? 'bg-emerald-500' : 'bg-accent-500'}`}></div>
+                  <span class="text-sm text-surface-700 font-medium">
                     {product.stock > 0 ? `${product.stock} unidades disponibles` : 'Agotado'}
                   </span>
                 </div>
               </div>
-              <button class="btn-primary px-8 py-3 h-fit" disabled={product.stock === 0}>
+              <button class="btn-primary px-8 py-3 h-fit text-base" disabled={product.stock === 0}>
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                </svg>
                 Añadir al carrito
               </button>
             </div>
@@ -85,5 +102,12 @@ if (!product) {
         </div>
       </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-surface-200/60 mt-12 bg-white/40">
+      <div class="max-w-6xl mx-auto px-4 py-6 text-center">
+        <p class="text-surface-400 text-sm">© 2026 Luxe E-commerce. Todos los derechos reservados.</p>
+      </div>
+    </footer>
   </body>
 </html>
