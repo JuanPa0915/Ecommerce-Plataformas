@@ -30,11 +30,13 @@ export interface Category {
 
 // ─── Variables de entorno ────────────────────────────────────────────────────
 
-const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string;
+const SUPABASE_URL =
+  (import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL || "") as string;
+const SUPABASE_ANON_KEY =
+  (import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY || "") as string;
 
 const MISSING_ENV_ERROR =
-  "Faltan variables de entorno de Supabase (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY).";
+  "Faltan variables de entorno de Supabase (PUBLIC_SUPABASE_URL/PUBLIC_SUPABASE_ANON_KEY o SUPABASE_URL/SUPABASE_ANON_KEY).";
 
 function hasSupabaseEnv(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
