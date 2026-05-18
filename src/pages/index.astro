@@ -1,10 +1,10 @@
 ---
 import "../styles/global.css";
-import { fetchProducts, fetchCategories } from "../lib/supabase";
-import { getProductImageUrl } from "../lib/supabase";
+import { fetchProducts, fetchCategories, getProductImageUrl } from "../lib/supabase";
 
 export const prerender = false;
 
+// Filtros y paginacion leidos desde la URL para mantener enlaces compartibles.
 const url = new URL(Astro.request.url);
 const search = url.searchParams.get("search") ?? "";
 const category = url.searchParams.get("category") ?? "all";
@@ -18,9 +18,11 @@ const [{ data: productsData, count, error }, categories] = await Promise.all([
 ]);
 
 const products = productsData ?? [];
+const productCount = count ?? 0;
 const totalPages = Math.max(1, Math.ceil((count ?? 0) / pageSize));
 
-function pageUrl(p) {
+// Conserva filtros actuales al construir URLs de paginacion.
+function pageUrl(p: number) {
   const next = new URL(url);
   next.searchParams.set("page", String(p));
   return `${next.pathname}${next.search}`;
@@ -66,7 +68,7 @@ function pageUrl(p) {
           Nuestro Catálogo
         </h1>
         <p class="text-surface-500 text-base mt-2">
-          {(count ?? 0)} producto{(count ?? 0) === 1 ? "" : "s"} disponibles para ti
+          {productCount} producto{productCount === 1 ? "" : "s"} disponibles para ti
         </p>
       </section>
 
