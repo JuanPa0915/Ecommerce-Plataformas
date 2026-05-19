@@ -1,15 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ecommerce-plataformas",
-  "main": "dist/server/entry.mjs",
   "compatibility_date": "2026-04-15",
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "dist/client"
-  },
-  "images": {
-    "binding": "IMAGES"
-  },
   "kv_namespaces": [
     {
       "binding": "SESSION",
