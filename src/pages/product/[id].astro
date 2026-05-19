@@ -1,12 +1,11 @@
 ---
 import "../../styles/global.css";
 import { fetchProductById, getProductImageUrl } from "../../lib/supabase";
+import { env as runtimeEnv } from "cloudflare:workers";
 
 export const prerender = false;
 
 const { id } = Astro.params;
-const runtimeEnv = (Astro.locals as any)?.runtime?.env;
-
 if (!id) {
   return Astro.redirect("/404");
 }

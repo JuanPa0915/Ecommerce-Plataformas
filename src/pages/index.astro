@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { fetchProducts, fetchCategories, getProductImageUrl } from "../lib/supabase";
+import { env as runtimeEnv } from "cloudflare:workers";
 
 export const prerender = false;
 
@@ -11,8 +12,6 @@ const category = url.searchParams.get("category") ?? "all";
 const pageParam = Number.parseInt(url.searchParams.get("page") ?? "1", 10);
 const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 const pageSize = 12;
-const runtimeEnv = (Astro.locals as any)?.runtime?.env;
-
 const [{ data: productsData, count, error }, categories] = await Promise.all([
   fetchProducts({ search, category, page, pageSize }, runtimeEnv),
   fetchCategories(runtimeEnv),
