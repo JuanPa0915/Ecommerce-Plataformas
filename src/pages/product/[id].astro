@@ -5,12 +5,13 @@ import { fetchProductById, getProductImageUrl } from "../../lib/supabase";
 export const prerender = false;
 
 const { id } = Astro.params;
+const runtimeEnv = (Astro.locals as any)?.runtime?.env;
 
 if (!id) {
   return Astro.redirect("/404");
 }
 
-const product = await fetchProductById(id);
+const product = await fetchProductById(id, runtimeEnv);
 
 if (!product) {
   return Astro.redirect("/404");

@@ -38,6 +38,28 @@ const SUPABASE_ANON_KEY =
 const MISSING_ENV_ERROR =
   "Faltan variables de entorno de Supabase (PUBLIC_SUPABASE_URL/PUBLIC_SUPABASE_ANON_KEY o SUPABASE_URL/SUPABASE_ANON_KEY).";
 
+type RuntimeEnv = {
+  PUBLIC_SUPABASE_URL?: string;
+  PUBLIC_SUPABASE_ANON_KEY?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_ANON_KEY?: string;
+};
+
+function resolveSupabaseEnv(runtimeEnv?: RuntimeEnv) {
+  const url =
+    runtimeEnv?.PUBLIC_SUPABASE_URL ||
+    runtimeEnv?.SUPABASE_URL ||
+    SUPABASE_URL ||
+    "";
+  const anonKey =
+    runtimeEnv?.PUBLIC_SUPABASE_ANON_KEY ||
+    runtimeEnv?.SUPABASE_ANON_KEY ||
+    SUPABASE_ANON_KEY ||
+    "";
+
+  return { url, anonKey };
+}
+
 function hasSupabaseEnv(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
@@ -46,12 +68,14 @@ function hasSupabaseEnv(): boolean {
 // Se usa en las páginas Astro con `output: 'server'` o en endpoints de API.
 // NO persiste sesión entre requests — stateless by design.
 
-export function createServerClient() {
-  if (!hasSupabaseEnv()) {
+export function createServerClient(runtimeEnv?: RuntimeEnv) {
+  const { url, anonKey } = resolveSupabaseEnv(runtimeEnv);
+
+  if (!(url && anonKey)) {
     return null;
   }
 
-  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createClient(url, anonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -100,9 +124,10 @@ export interface CatalogFilters {
 }
 
 export async function fetchProducts(
-  filters: CatalogFilters = {}
+  filters: CatalogFilters = {},
+  runtimeEnv?: RuntimeEnv
 ): Promise<ProductsResponse> {
-  const supabase = createServerClient();
+  const supabase = createServerClient(runtimeEnv);
   if (!supabase) {
     return {
       data: [],
@@ -142,8 +167,8 @@ export async function fetchProducts(
   };
 }
 
-export async function fetchProductById(id: string): Promise<Product | null> {
-  const supabase = createServerClient();
+export async function fetchProductById(id: string, runtimeEnv?: RuntimeEnv): Promise<Product | null> {
+  const supabase = createServerClient(runtimeEnv);
   if (!supabase) return null;
 
   const { data, error } = await supabase
@@ -157,8 +182,8 @@ export async function fetchProductById(id: string): Promise<Product | null> {
   return data;
 }
 
-export async function fetchCategories(): Promise<string[]> {
-  const supabase = createServerClient();
+export async function fetchCategories(runtimeEnv?: RuntimeEnv): Promise<string[]> {
+  const supabase = createServerClient(runtimeEnv);
   if (!supabase) return [];
 
   const { data } = await supabase
