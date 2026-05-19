@@ -1,13 +1,31 @@
 ---
 // src/pages/admin/dashboard.astro
-// Dashboard admin — SSG (prerendered)
+// Dashboard admin — SSR dinamico
 // CRUD completo de productos con Supabase Storage para imágenes.
-export const prerender = true;
+import { env as runtimeEnv } from "cloudflare:workers";
+
+export const prerender = false;
+
+const publicSupabaseUrl = runtimeEnv.PUBLIC_SUPABASE_URL || runtimeEnv.SUPABASE_URL || "";
+const publicSupabaseAnonKey = runtimeEnv.PUBLIC_SUPABASE_ANON_KEY || runtimeEnv.SUPABASE_ANON_KEY || "";
 
 import AdminLayout from "../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout title="Dashboard — Admin">
+  <Fragment slot="head">
+    <meta name="public-supabase-url" content={publicSupabaseUrl} />
+    <meta name="public-supabase-anon-key" content={publicSupabaseAnonKey} />
+  </Fragment>
+
+  <div
+    id="runtime-env"
+    data-public-supabase-url={publicSupabaseUrl}
+    data-public-supabase-anon-key={publicSupabaseAnonKey}
+    class="hidden"
+    aria-hidden="true"
+  ></div>
+
   <div id="root">
     <!-- Loading inicial -->
     <div id="auth-check" class="min-h-screen flex items-center justify-center">
@@ -299,6 +317,12 @@ import AdminLayout from "../layouts/AdminLayout.astro";
 </style>
 
 
+
+<script is:inline define:vars={{ publicSupabaseUrl, publicSupabaseAnonKey }}>
+  // Inyecta variables runtime para inicializar Supabase en cliente.
+  window.__PUBLIC_SUPABASE_URL__ = publicSupabaseUrl;
+  window.__PUBLIC_SUPABASE_ANON_KEY__ = publicSupabaseAnonKey;
+</script>
 
 <script>
   // Logica del dashboard movida a modulo para mantener este .astro compacto

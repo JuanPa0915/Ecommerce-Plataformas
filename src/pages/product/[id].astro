@@ -3,16 +3,20 @@ import "../../styles/global.css";
 import { fetchProductById, getProductImageUrl } from "../../lib/supabase";
 import { env as runtimeEnv } from "cloudflare:workers";
 
+// Detalle SSR dinamico para resolver el id desde la URL en cada request.
 export const prerender = false;
 
+// Parametro dinamico del producto en ruta /product/[id].
 const { id } = Astro.params;
 if (!id) {
   return Astro.redirect("/404");
 }
 
+// Consulta del producto puntual con variables runtime de Cloudflare.
 const product = await fetchProductById(id, runtimeEnv);
 
 if (!product) {
+  // Si no existe o esta inactivo, se redirige a 404.
   return Astro.redirect("/404");
 }
 ---
@@ -49,6 +53,7 @@ if (!product) {
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-12">
+      <!-- Layout 2 columnas: galeria y ficha del producto -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
         <!-- Imagen -->
         <div class="card p-3 overflow-hidden aspect-square flex items-center justify-center bg-surface-100/50">
@@ -62,12 +67,14 @@ if (!product) {
         <!-- Info -->
         <div class="flex flex-col justify-center">
           <div class="mb-6">
+            <!-- Categoria opcional -->
             {product.category && (
               <span class="badge-brand mb-3 uppercase tracking-widest text-[10px]">
                 {product.category}
               </span>
             )}
             <h1 class="text-4xl font-extrabold text-surface-900 mt-3 tracking-tight">{product.name}</h1>
+            <!-- Precio formateado en pesos colombianos -->
             <p class="text-3xl font-bold text-accent-500 mt-4">
               ${product.price.toLocaleString("es-CO")}
             </p>
@@ -85,6 +92,7 @@ if (!product) {
               <div class="flex-1">
                 <p class="text-xs text-surface-500 uppercase font-semibold mb-1">Disponibilidad</p>
                 <div class="flex items-center gap-2">
+                  <!-- Semaforo simple de stock -->
                   <div class={`w-2.5 h-2.5 rounded-full ${product.stock > 0 ? 'bg-emerald-500' : 'bg-accent-500'}`}></div>
                   <span class="text-sm text-surface-700 font-medium">
                     {product.stock > 0 ? `${product.stock} unidades disponibles` : 'Agotado'}

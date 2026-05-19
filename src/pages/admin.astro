@@ -1,19 +1,39 @@
 ---
 import "../styles/global.css";
+import { env as runtimeEnv } from "cloudflare:workers";
 
-export const prerender = true;
+// Esta vista solo renderiza el formulario de acceso del panel administrativo.
+export const prerender = false;
+
+const publicSupabaseUrl = runtimeEnv.PUBLIC_SUPABASE_URL || runtimeEnv.SUPABASE_URL || "";
+const publicSupabaseAnonKey = runtimeEnv.PUBLIC_SUPABASE_ANON_KEY || runtimeEnv.SUPABASE_ANON_KEY || "";
 ---
 
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="public-supabase-url" content={publicSupabaseUrl} />
+    <meta name="public-supabase-anon-key" content={publicSupabaseAnonKey} />
     <title>Admin Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body>
+    <div
+      id="runtime-env"
+      data-public-supabase-url={publicSupabaseUrl}
+      data-public-supabase-anon-key={publicSupabaseAnonKey}
+      class="hidden"
+      aria-hidden="true"
+    ></div>
+
+    <script is:inline define:vars={{ publicSupabaseUrl, publicSupabaseAnonKey }}>
+      window.__PUBLIC_SUPABASE_URL__ = publicSupabaseUrl;
+      window.__PUBLIC_SUPABASE_ANON_KEY__ = publicSupabaseAnonKey;
+    </script>
+
     <main class="min-h-screen flex items-center justify-center px-4 py-10">
       <!-- Decorative background shapes -->
       <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
@@ -38,6 +58,7 @@ export const prerender = true;
         </div>
 
         <form id="login-form" class="space-y-5">
+          <!-- Credenciales de acceso -->
           <div>
             <label for="email" class="input-label">Correo</label>
             <input id="email" name="email" type="email" autocomplete="email" class="input-field" placeholder="tu@email.com" required />
@@ -50,10 +71,12 @@ export const prerender = true;
 
           <p id="login-error" class="hidden text-sm text-accent-700 bg-accent-50 border border-accent-200 rounded-xl px-4 py-3"></p>
 
+          <!-- Boton principal de login -->
           <button id="login-btn" type="submit" class="btn-primary w-full justify-center py-3 text-base">
             Entrar
           </button>
 
+          <!-- Recuperacion de contraseña via Supabase Auth -->
           <button id="recover-password-btn" type="button" class="btn-secondary w-full justify-center" onclick="recoverPassword()">
             Recuperar Contraseña
           </button>
@@ -73,6 +96,7 @@ export const prerender = true;
     <script>
       import { getBrowserClient } from "../lib/supabase";
 
+      // Cliente browser para auth (sin exponer service role key).
       const supabase = getBrowserClient();
       const $ = (id: string) => document.getElementById(id);
       const form = document.getElementById("login-form");
@@ -93,6 +117,7 @@ export const prerender = true;
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        // Lectura y sanitizacion basica de inputs.
         const email = ($("email") as HTMLInputElement).value.trim();
         const password = ($("password") as HTMLInputElement).value;
 
@@ -100,6 +125,7 @@ export const prerender = true;
         if (errorEl) errorEl.textContent = "";
 
         if (!email || !password) {
+          // Validacion temprana en cliente para evitar request innecesaria.
           if (errorEl) {
             errorEl.textContent = "Completa correo y contraseña.";
             errorEl.classList.remove("hidden");
@@ -120,6 +146,7 @@ export const prerender = true;
         }
 
         if (error) {
+          // Mensaje de auth devuelto por Supabase (credenciales invalidas, etc.).
           if (errorEl) {
             errorEl.textContent = error.message;
             errorEl.classList.remove("hidden");
@@ -139,6 +166,7 @@ export const prerender = true;
         }
 
         try {
+          // Envia email de reset usando la plantilla/configuracion de Supabase.
           const { error } = await supabase.auth.resetPasswordForEmail(email);
 
           if (error) {

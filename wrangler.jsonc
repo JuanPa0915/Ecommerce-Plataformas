@@ -1,7 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
+  // Nombre del Worker en Cloudflare.
   "name": "ecommerce-plataformas",
+  // Fecha de compatibilidad de runtime (fija comportamiento de APIs).
   "compatibility_date": "2026-04-15",
+  // KV usado por el sistema de sessiones del adaptador/SSR.
   "kv_namespaces": [
     {
       "binding": "SESSION",
